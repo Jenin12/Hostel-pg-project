@@ -1,0 +1,445 @@
+{% extends "base.html" %}
+
+{% block title %}Landlord & PG Owner Dashboard | RentPG{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- Header Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <span class="text-xs uppercase font-bold text-indigo-300 tracking-wider">Owner Operations Console</span>
+            <h1 class="text-2xl sm:text-3xl font-black mt-1">{{ current_user.name }}'s Properties</h1>
+            <p class="text-xs text-slate-300 mt-1">Manage bed vacancies, tenant bookings, rent collection, and maintenance issues.</p>
+        </div>
+        <div class="flex items-center space-x-3">
+            <a href="{{ url_for('add_property') }}" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-md transition-colors flex items-center space-x-1.5">
+                <i class="fa-solid fa-plus"></i>
+                <span>Add New PG Listing</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- Metric Counters -->
+    <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">My Properties</span>
+            <span class="text-2xl font-black text-slate-900 mt-1 block">{{ metrics.properties }}</span>
+            <span class="text-[10px] text-slate-500 font-semibold">Active Listings</span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Total Beds</span>
+            <span class="text-2xl font-black text-slate-900 mt-1 block">{{ metrics.total_beds }}</span>
+            <span class="text-[10px] text-slate-500 font-semibold">Capacity</span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Occupancy</span>
+            <span class="text-2xl font-black text-emerald-600 mt-1 block">{{ metrics.occupied_beds }}</span>
+            <span class="text-[10px] text-emerald-600 font-semibold">{{ "{:.0f}".format((metrics.occupied_beds / metrics.total_beds * 100) if metrics.total_beds else 0) }}% Occupied</span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Vacant Beds</span>
+            <span class="text-2xl font-black text-indigo-600 mt-1 block">{{ metrics.vacant_beds }}</span>
+            <span class="text-[10px] text-indigo-500 font-semibold">Available for booking</span>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm col-span-2 md:col-span-1">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Rent Collected</span>
+            <span class="text-2xl font-black text-emerald-600 mt-1 block">₹{{ "{:,.0f}".format(metrics.total_revenue) }}</span>
+            <span class="text-[10px] text-amber-600 font-semibold">₹{{ "{:,.0f}".format(metrics.pending_revenue) }} pending</span>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="border-b border-slate-200 flex space-x-8 text-xs font-bold">
+        <button onclick="switchTab('tab-properties')" id="btn-tab-properties" class="pb-3 text-primary-600 border-b-2 border-primary-600 flex items-center space-x-2">
+            <i class="fa-solid fa-hotel"></i>
+            <span>My Properties & Rooms ({{ properties|length }})</span>
+        </button>
+        <button onclick="switchTab('tab-bookings')" id="btn-tab-bookings" class="pb-3 text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Booking Requests ({{ bookings|length }})</span>
+        </button>
+        <button onclick="switchTab('tab-visits')" id="btn-tab-visits" class="pb-3 text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+            <i class="fa-regular fa-clock"></i>
+            <span>Scheduled Visits ({{ visits|length }})</span>
+        </button>
+        <button onclick="switchTab('tab-payments')" id="btn-tab-payments" class="pb-3 text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+            <i class="fa-solid fa-receipt"></i>
+            <span>Rent Collection ({{ payments|length }})</span>
+        </button>
+        <button onclick="switchTab('tab-complaints')" id="btn-tab-complaints" class="pb-3 text-slate-500 hover:text-slate-700 flex items-center space-x-2">
+            <i class="fa-solid fa-wrench"></i>
+            <span>Complaints ({{ complaints|length }})</span>
+        </button>
+    </div>
+
+    <!-- ================= TAB 1: PROPERTIES & ROOMS ================= -->
+    <div id="tab-properties" class="space-y-6">
+        {% for prop in properties %}
+            <div class="bg-white rounded-3xl p-6 border border-slate-200 shadow-sm space-y-4">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-100">
+                    <div>
+                        <div class="flex items-center space-x-2">
+                            <span class="px-2.5 py-0.5 rounded text-[10px] font-bold 
+                                {% if prop.gender_category == 'Boys' %} badge-boys
+                                {% elif prop.gender_category == 'Girls' %} badge-girls
+                                {% else %} badge-coed {% endif %}">
+                                {{ prop.gender_category }} PG
+                            </span>
+                            <span class="text-xs font-semibold text-slate-400">&bull; {{ prop.city }} ({{ prop.locality }})</span>
+                        </div>
+                        <h2 class="text-xl font-bold text-slate-900 mt-1">{{ prop.title }}</h2>
+                        <p class="text-xs text-slate-500">{{ prop.address }} &bull; Contact: {{ prop.contact_phone }}</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="openAddRoomModal('{{ prop.id }}', '{{ prop.title }}')" class="px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition-colors">
+                            <i class="fa-solid fa-plus mr-1"></i> Add Room
+                        </button>
+                        <a href="{{ url_for('listing_detail', property_id=prop.id) }}" target="_blank" class="px-3 py-1.5 rounded-xl bg-primary-50 text-primary-600 hover:bg-primary-100 font-bold text-xs transition-colors">
+                            <i class="fa-solid fa-arrow-up-right-from-square mr-1"></i> Public View
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Rooms Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+                            <tr>
+                                <th class="px-4 py-3">Room No</th>
+                                <th class="px-4 py-3">Sharing Type</th>
+                                <th class="px-4 py-3">Total Capacity</th>
+                                <th class="px-4 py-3">Vacant Beds</th>
+                                <th class="px-4 py-3">Monthly Rent</th>
+                                <th class="px-4 py-3">Security Deposit</th>
+                                <th class="px-4 py-3 text-right">Quick Update</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for r in prop_rooms.get(prop.id, []) %}
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3 font-mono font-bold text-slate-900">{{ r.room_number }}</td>
+                                    <td class="px-4 py-3 font-semibold text-slate-700">{{ r.room_type }}</td>
+                                    <td class="px-4 py-3 text-slate-600">{{ r.total_beds }} beds</td>
+                                    <td class="px-4 py-3">
+                                        {% if r.available_beds > 0 %}
+                                            <span class="font-bold text-emerald-600">{{ r.available_beds }} available</span>
+                                        {% else %}
+                                            <span class="font-bold text-rose-500">Full</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-3 font-bold text-slate-900">₹{{ "{:,.0f}".format(r.monthly_rent) }}</td>
+                                    <td class="px-4 py-3 text-slate-600">₹{{ "{:,.0f}".format(r.security_deposit) }}</td>
+                                    <td class="px-4 py-3 text-right">
+                                        <form action="{{ url_for('update_beds', room_id=r.id) }}" method="POST" class="inline-flex items-center space-x-1">
+                                            <input type="number" name="available_beds" min="0" max="{{ r.total_beds }}" value="{{ r.available_beds }}" class="w-14 px-2 py-1 text-xs border rounded-lg text-center font-bold">
+                                            <button type="submit" class="px-2 py-1 rounded-lg bg-slate-900 hover:bg-primary-600 text-white font-bold text-[10px]">
+                                                Save
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-white rounded-3xl p-10 text-center border border-slate-200">
+                <p class="text-sm font-bold text-slate-800">You haven't added any PG listings yet.</p>
+                <a href="{{ url_for('add_property') }}" class="mt-3 inline-block px-5 py-2.5 rounded-xl bg-primary-600 text-white text-xs font-bold">
+                    Add Your First PG
+                </a>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- ================= TAB 2: BOOKING REQUESTS ================= -->
+    <div id="tab-bookings" class="hidden space-y-4">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6">
+            <h3 class="text-base font-bold text-slate-900 mb-4">Tenant Room Reservations</h3>
+            {% if bookings %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+                            <tr>
+                                <th class="px-4 py-3">Tenant Name</th>
+                                <th class="px-4 py-3">Contact</th>
+                                <th class="px-4 py-3">PG & Room</th>
+                                <th class="px-4 py-3">Check-in Date</th>
+                                <th class="px-4 py-3">Monthly Rent</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for b in bookings %}
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3 font-bold text-slate-900">{{ b.tenant_name }}</td>
+                                    <td class="px-4 py-3 text-slate-600">
+                                        <span class="block">{{ b.tenant_phone }}</span>
+                                        <span class="text-[10px] text-slate-400">{{ b.tenant_email }}</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-slate-800">
+                                        <span class="font-semibold">{{ b.property_title }}</span>
+                                        <span class="block text-[10px] text-slate-500">Room {{ b.room_number }} ({{ b.room_type }})</span>
+                                    </td>
+                                    <td class="px-4 py-3 text-slate-700">{{ b.check_in_date }}</td>
+                                    <td class="px-4 py-3 font-extrabold text-slate-900">₹{{ "{:,.0f}".format(b.rent_amount) }}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold
+                                            {% if b.status == 'Active' %} bg-emerald-50 text-emerald-700 border border-emerald-200
+                                            {% elif b.status == 'Pending' %} bg-amber-50 text-amber-700 border border-amber-200
+                                            {% else %} bg-slate-100 text-slate-600 {% endif %}">
+                                            {{ b.status }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-right space-x-1">
+                                        {% if b.status == 'Pending' %}
+                                            <form action="{{ url_for('manage_booking', booking_id=b.id, action='approve') }}" method="POST" class="inline">
+                                                <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[10px]">Approve</button>
+                                            </form>
+                                            <form action="{{ url_for('manage_booking', booking_id=b.id, action='cancel') }}" method="POST" class="inline">
+                                                <button type="submit" class="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-600 font-bold text-[10px]">Reject</button>
+                                            </form>
+                                        {% else %}
+                                            <span class="text-slate-400 font-semibold">&mdash;</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-500 text-center py-6">No booking requests received yet.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= TAB 3: VISITS ================= -->
+    <div id="tab-visits" class="hidden space-y-4">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6">
+            <h3 class="text-base font-bold text-slate-900 mb-4">Scheduled Physical Inspections</h3>
+            {% if visits %}
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% for v in visits %}
+                        <div class="p-4 rounded-2xl border border-slate-200 space-y-2 bg-slate-50/50">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-slate-900 text-sm">{{ v.tenant_name }}</span>
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">{{ v.status }}</span>
+                            </div>
+                            <p class="text-xs text-slate-600">{{ v.property_title }}</p>
+                            <p class="text-xs font-semibold text-indigo-600">
+                                <i class="fa-regular fa-clock mr-1"></i> {{ v.visit_date }} at {{ v.visit_time }}
+                            </p>
+                            <p class="text-xs text-slate-500"><i class="fa-solid fa-phone mr-1"></i> {{ v.tenant_phone }} &bull; {{ v.tenant_email }}</p>
+                            {% if v.notes %}
+                                <p class="text-[11px] text-slate-400 italic">"{{ v.notes }}"</p>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-500 text-center py-6">No scheduled visits right now.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= TAB 4: PAYMENTS ================= -->
+    <div id="tab-payments" class="hidden space-y-4">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6">
+            <h3 class="text-base font-bold text-slate-900 mb-4">Rent Collections & Ledger</h3>
+            {% if payments %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+                            <tr>
+                                <th class="px-4 py-3">Month</th>
+                                <th class="px-4 py-3">Tenant</th>
+                                <th class="px-4 py-3">PG & Room</th>
+                                <th class="px-4 py-3">Amount</th>
+                                <th class="px-4 py-3">Status</th>
+                                <th class="px-4 py-3">Txn Reference</th>
+                                <th class="px-4 py-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            {% for p in payments %}
+                                <tr class="hover:bg-slate-50">
+                                    <td class="px-4 py-3 font-bold text-slate-900">{{ p.month_year }}</td>
+                                    <td class="px-4 py-3 font-semibold text-slate-800">{{ p.tenant_name }}</td>
+                                    <td class="px-4 py-3 text-slate-600">{{ p.property_title }} (Room {{ p.room_number }})</td>
+                                    <td class="px-4 py-3 font-extrabold text-slate-900">₹{{ "{:,.0f}".format(p.amount) }}</td>
+                                    <td class="px-4 py-3">
+                                        {% if p.status == 'Paid' %}
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                                Paid
+                                            </span>
+                                        {% else %}
+                                            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                                Pending
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-4 py-3 font-mono text-[10px] text-slate-500">{{ p.transaction_ref or '&mdash;' }}</td>
+                                    <td class="px-4 py-3 text-right space-x-1">
+                                        {% if p.status == 'Paid' %}
+                                            <a href="{{ url_for('view_receipt', payment_id=p.id) }}" target="_blank" class="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-[10px]">
+                                                Receipt
+                                            </a>
+                                        {% else %}
+                                            <form action="{{ url_for('mark_rent_paid', payment_id=p.id) }}" method="POST" class="inline">
+                                                <button type="submit" class="px-2.5 py-1 rounded-lg bg-emerald-600 text-white font-bold text-[10px]">
+                                                    Mark Paid (Cash/UPI)
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-500 text-center py-6">No rent records found.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- ================= TAB 5: COMPLAINTS ================= -->
+    <div id="tab-complaints" class="hidden space-y-4">
+        <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <h3 class="text-base font-bold text-slate-900 mb-2">Tenant Maintenance & Service Issues</h3>
+            {% if complaints %}
+                <div class="space-y-4">
+                    {% for c in complaints %}
+                        <div class="p-4 rounded-2xl border border-slate-200 space-y-3 bg-slate-50/60">
+                            <div class="flex items-start justify-between">
+                                <div>
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-700">{{ c.category }}</span>
+                                    <h4 class="text-sm font-bold text-slate-900 mt-1">{{ c.title }}</h4>
+                                    <p class="text-xs text-slate-600 mt-0.5">{{ c.description }}</p>
+                                    <p class="text-[10px] text-slate-400 mt-1">
+                                        Tenant: {{ c.tenant_name }} ({{ c.tenant_phone }}) &bull; {{ c.property_title }} Room {{ c.room_number }}
+                                    </p>
+                                </div>
+                                <span class="px-2.5 py-1 rounded-lg text-xs font-bold
+                                    {% if c.status == 'Resolved' %} bg-emerald-50 text-emerald-700 border border-emerald-200
+                                    {% elif c.status == 'In Progress' %} bg-amber-50 text-amber-700 border border-amber-200
+                                    {% else %} bg-rose-50 text-rose-700 border border-rose-200 {% endif %}">
+                                    {{ c.status }}
+                                </span>
+                            </div>
+
+                            <!-- Resolution Form -->
+                            <form action="{{ url_for('update_complaint', complaint_id=c.id) }}" method="POST" class="pt-3 border-t border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-2 items-center">
+                                <select name="status" class="px-2.5 py-1.5 text-xs font-semibold rounded-lg bg-white border border-slate-200">
+                                    <option value="In Progress" {% if c.status == 'In Progress' %}selected{% endif %}>Mark: In Progress</option>
+                                    <option value="Resolved" {% if c.status == 'Resolved' %}selected{% endif %}>Mark: Resolved</option>
+                                    <option value="Open" {% if c.status == 'Open' %}selected{% endif %}>Mark: Open</option>
+                                </select>
+                                <input type="text" name="resolution_notes" value="{{ c.resolution_notes or '' }}" placeholder="Add note (e.g. Plumber dispatched)" class="px-2.5 py-1.5 text-xs rounded-lg bg-white border border-slate-200">
+                                <button type="submit" class="px-3 py-1.5 rounded-lg bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs transition-colors">
+                                    Update Status
+                                </button>
+                            </form>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-xs text-slate-500 text-center py-6">No complaints reported by tenants.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- ================= ADD ROOM MODAL ================= -->
+<div id="addRoomModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 relative">
+        <button type="button" onclick="document.getElementById('addRoomModal').classList.add('hidden')" class="absolute top-4 right-4 text-slate-400 hover:text-slate-700">
+            <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+        <div class="mb-5">
+            <span class="text-xs font-bold text-primary-600 uppercase">Room Inventory</span>
+            <h3 class="text-lg font-bold text-slate-900">Add Room to PG</h3>
+            <p id="modal_prop_name" class="text-xs text-slate-500 font-semibold"></p>
+        </div>
+
+        <form id="add_room_form" action="" method="POST" class="space-y-4">
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Room Number</label>
+                    <input type="text" name="room_number" required placeholder="e.g. 104" class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Sharing Type</label>
+                    <select name="room_type" class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200">
+                        <option value="Single">Single</option>
+                        <option value="2-Sharing" selected>2-Sharing</option>
+                        <option value="3-Sharing">3-Sharing</option>
+                        <option value="4-Sharing">4-Sharing</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Total Beds</label>
+                    <input type="number" name="total_beds" value="2" min="1" max="10" required class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Available Beds</label>
+                    <input type="number" name="available_beds" value="2" min="0" max="10" required class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Monthly Rent (₹)</label>
+                    <input type="number" name="monthly_rent" value="8500" required class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Deposit (₹)</label>
+                    <input type="number" name="security_deposit" value="17000" required class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-md transition-colors">
+                Save & Add Room
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function switchTab(tabId) {
+    const tabs = ['tab-properties', 'tab-bookings', 'tab-visits', 'tab-payments', 'tab-complaints'];
+    tabs.forEach(t => {
+        const el = document.getElementById(t);
+        const btn = document.getElementById('btn-' + t);
+        if (t === tabId) {
+            el.classList.remove('hidden');
+            btn.className = "pb-3 text-primary-600 border-b-2 border-primary-600 flex items-center space-x-2";
+        } else {
+            el.classList.add('hidden');
+            btn.className = "pb-3 text-slate-500 hover:text-slate-700 flex items-center space-x-2";
+        }
+    });
+}
+
+function openAddRoomModal(propertyId, propertyTitle) {
+    const modal = document.getElementById('addRoomModal');
+    document.getElementById('add_room_form').action = "/owner/add-room/" + propertyId;
+    document.getElementById('modal_prop_name').textContent = propertyTitle;
+    modal.classList.remove('hidden');
+}
+</script>
+{% endblock %}

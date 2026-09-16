@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Create an Account | RentPG{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto px-4 py-12">
+    <div class="bg-white rounded-3xl p-8 border border-slate-200 shadow-xl space-y-6">
+        <div class="text-center space-y-2">
+            <div class="w-12 h-12 mx-auto rounded-2xl bg-primary-50 text-primary-600 flex items-center justify-center text-xl font-bold">
+                <i class="fa-solid fa-user-plus"></i>
+            </div>
+            <h1 class="text-2xl font-black text-slate-900">Create Account</h1>
+            <p class="text-xs text-slate-500">Join RentPG to find rooms or list your properties</p>
+        </div>
+
+        <form action="{{ url_for('register') }}" method="POST" class="space-y-4">
+            <!-- Role Selector Tabs -->
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">I am registering as:</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <label id="label-tenant" class="flex items-center justify-center p-3 rounded-xl border text-xs cursor-pointer font-bold transition-all {% if request.args.get('role') != 'owner' %}bg-primary-50 border-primary-500 text-primary-700{% else %}border-slate-200 text-slate-600{% endif %}">
+                        <input type="radio" name="role" value="tenant" class="sr-only" onchange="selectRole('tenant')" {% if request.args.get('role') != 'owner' %}checked{% endif %}>
+                        <i class="fa-solid fa-user mr-1.5"></i> Tenant / Seeker
+                    </label>
+                    <label id="label-owner" class="flex items-center justify-center p-3 rounded-xl border text-xs cursor-pointer font-bold transition-all {% if request.args.get('role') == 'owner' %}bg-primary-50 border-primary-500 text-primary-700{% else %}border-slate-200 text-slate-600{% endif %}">
+                        <input type="radio" name="role" value="owner" class="sr-only" onchange="selectRole('owner')" {% if request.args.get('role') == 'owner' %}checked{% endif %}>
+                        <i class="fa-solid fa-building mr-1.5"></i> PG / Room Owner
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Full Name</label>
+                <div class="relative">
+                    <i class="fa-solid fa-user absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="text" name="name" required placeholder="e.g. Rahul Sharma" 
+                           class="w-full pl-9 pr-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Email Address</label>
+                <div class="relative">
+                    <i class="fa-solid fa-envelope absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="email" name="email" required placeholder="name@example.com" 
+                           class="w-full pl-9 pr-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Mobile Number</label>
+                <div class="relative">
+                    <i class="fa-solid fa-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="tel" name="phone" placeholder="+91 98765 43210" 
+                           class="w-full pl-9 pr-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">Create Password</label>
+                <div class="relative">
+                    <i class="fa-solid fa-lock absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                    <input type="password" name="password" required placeholder="Minimum 6 characters" 
+                           class="w-full pl-9 pr-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                </div>
+            </div>
+
+            <button type="submit" class="w-full py-3 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-md shadow-primary-600/20 transition-colors">
+                Complete Registration
+            </button>
+        </form>
+
+        <p class="text-center text-xs text-slate-500 pt-2 border-t border-slate-100">
+            Already have an account? 
+            <a href="{{ url_for('login') }}" class="font-bold text-primary-600 hover:underline">Sign In</a>
+        </p>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+function selectRole(role) {
+    const tenantLbl = document.getElementById('label-tenant');
+    const ownerLbl = document.getElementById('label-owner');
+    if (role === 'tenant') {
+        tenantLbl.className = 'flex items-center justify-center p-3 rounded-xl border text-xs cursor-pointer font-bold transition-all bg-primary-50 border-primary-500 text-primary-700';
+        ownerLbl.className = 'flex items-center justify-center p-3 rounded-xl border text-xs cursor-pointer font-bold transition-all border-slate-200 text-slate-600';
+    } else {
+        ownerLbl.className = 'flex items-center justify-center p-3 rounded-xl border text-xs cursor-pointer font-bold transition-all bg-primary-50 border-primary-500 text-primary-700';
+        tenantLbl.className = 'flex items-center justify-center p-3 rounded-xl border text-xs cursor-pointer font-bold transition-all border-slate-200 text-slate-600';
+    }
+}
+</script>
+{% endblock %}

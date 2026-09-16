@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rent Receipt #REC-{{ receipt.id }} | RentPG</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="bg-slate-100 py-8 px-4 font-sans text-slate-800">
+
+    <!-- Action Toolbar (Hidden during print) -->
+    <div class="max-w-3xl mx-auto mb-6 flex items-center justify-between no-print">
+        <a href="{{ url_for('tenant_dashboard') }}" class="inline-flex items-center text-xs font-bold text-slate-600 hover:text-slate-900 bg-white px-4 py-2 rounded-xl shadow-sm border border-slate-200">
+            <i class="fa-solid fa-arrow-left mr-2"></i> Back to Dashboard
+        </a>
+        <div class="space-x-2">
+            <button onclick="window.print()" class="inline-flex items-center px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs shadow-md transition-colors">
+                <i class="fa-solid fa-print mr-2"></i> Print / Save PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Official Printable Receipt Container -->
+    <div class="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl border border-slate-200 p-8 sm:p-12 receipt-container relative overflow-hidden">
+        
+        <!-- Paid Watermark Stamp -->
+        <div class="absolute right-12 top-28 pointer-events-none opacity-20 rotate-[-15deg] border-4 border-emerald-600 rounded-2xl p-4 text-emerald-700 text-3xl font-black uppercase tracking-widest text-center">
+            Paid & Verified<br>
+            <span class="text-xs tracking-normal">RentPG Invoicing</span>
+        </div>
+
+        <!-- Receipt Header -->
+        <div class="flex flex-col sm:flex-row sm:items-start justify-between pb-6 border-b-2 border-slate-900 gap-4">
+            <div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center text-white">
+                        <i class="fa-solid fa-bed text-sm"></i>
+                    </div>
+                    <span class="text-2xl font-black text-slate-900">Rent<span class="text-indigo-600">PG</span></span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1">Official Rent Payment Receipt & Tax Invoice</p>
+            </div>
+
+            <div class="text-left sm:text-right">
+                <span class="block text-xs font-mono font-bold text-indigo-600 uppercase">Receipt No:</span>
+                <span class="text-sm font-mono font-extrabold text-slate-900">#RPG-{{ 20260000 + receipt.id }}</span>
+                <span class="block text-[11px] text-slate-500 mt-0.5">Date: {{ receipt.paid_at or receipt.created_at }}</span>
+            </div>
+        </div>
+
+        <!-- Meta Information: Tenant & Property -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-8 py-6 border-b border-slate-200 text-xs">
+            <div>
+                <span class="block font-bold uppercase tracking-wider text-[10px] text-slate-400 mb-2">Tenant Details (Received From)</span>
+                <p class="font-extrabold text-slate-900 text-sm">{{ receipt.tenant_name }}</p>
+                <p class="text-slate-600 mt-0.5"><i class="fa-solid fa-envelope mr-1 text-slate-400 text-[10px]"></i> {{ receipt.tenant_email }}</p>
+                <p class="text-slate-600"><i class="fa-solid fa-phone mr-1 text-slate-400 text-[10px]"></i> {{ receipt.tenant_phone }}</p>
+            </div>
+
+            <div>
+                <span class="block font-bold uppercase tracking-wider text-[10px] text-slate-400 mb-2">Accommodation & Landlord</span>
+                <p class="font-extrabold text-slate-900 text-sm">{{ receipt.property_title }}</p>
+                <p class="text-slate-600 mt-0.5">{{ receipt.property_address }}, {{ receipt.property_city }}</p>
+                <p class="text-slate-600 font-semibold mt-1">Room Allotted: <span class="text-indigo-600">Room {{ receipt.room_number }} ({{ receipt.room_type }})</span></p>
+                <p class="text-slate-500 text-[11px]">Owner: {{ receipt.owner_name }} ({{ receipt.owner_phone }})</p>
+            </div>
+        </div>
+
+        <!-- Rent Line Items -->
+        <div class="py-6 border-b border-slate-200">
+            <table class="w-full text-left text-xs">
+                <thead>
+                    <tr class="border-b border-slate-200 text-slate-400 uppercase text-[10px] tracking-wider font-bold">
+                        <th class="py-2">Description</th>
+                        <th class="py-2">Period / Month</th>
+                        <th class="py-2 text-right">Amount (INR)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    <tr>
+                        <td class="py-4 font-semibold text-slate-800">
+                            Monthly Accommodation Rent & Facilities
+                            <span class="block text-[10px] text-slate-400">Includes Room Stay, High-Speed WiFi, Utilities & Maintenance</span>
+                        </td>
+                        <td class="py-4 font-bold text-slate-900">{{ receipt.month_year }}</td>
+                        <td class="py-4 text-right font-black text-slate-900 text-sm">₹{{ "{:,.2f}".format(receipt.amount) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Total & Payment Information -->
+        <div class="py-6 flex flex-col sm:flex-row items-start justify-between gap-6 border-b border-slate-200 text-xs">
+            <div class="space-y-1.5">
+                <span class="block font-bold uppercase text-[10px] text-slate-400">Payment Details</span>
+                <p class="text-slate-700">Mode: <span class="font-bold text-slate-900">{{ receipt.payment_method }}</span></p>
+                <p class="text-slate-700 font-mono text-[11px]">Txn Ref: <span class="font-bold text-indigo-700">{{ receipt.transaction_ref or 'CONFIRMED' }}</span></p>
+                <p class="text-emerald-700 font-bold flex items-center">
+                    <i class="fa-solid fa-circle-check mr-1.5 text-xs"></i> Status: Payment Cleared & Verified
+                </p>
+            </div>
+
+            <div class="text-left sm:text-right bg-slate-50 p-4 rounded-2xl border border-slate-100 min-w-[200px]">
+                <span class="block text-[10px] uppercase font-bold text-slate-400">Total Rent Paid</span>
+                <span class="text-2xl font-black text-slate-900">₹{{ "{:,.2f}".format(receipt.amount) }}</span>
+                <span class="block text-[10px] text-emerald-600 font-semibold mt-1">Zero Balance Outstanding</span>
+            </div>
+        </div>
+
+        <!-- Signatures & Disclaimer -->
+        <div class="pt-8 flex flex-col sm:flex-row items-end justify-between gap-6 text-xs text-slate-500">
+            <div class="max-w-xs text-[11px] leading-relaxed">
+                <p class="font-bold text-slate-700">Terms & Notes:</p>
+                <p>This is a computer-generated receipt issued through the RentPG portal. Valid for HRA tax exemption claims under Section 10(13A) of the Income Tax Act.</p>
+            </div>
+
+            <div class="text-center sm:text-right space-y-1">
+                <div class="h-10 border-b border-slate-300 w-40 ml-auto flex items-end justify-center pb-1 text-slate-400 italic text-[11px]">
+                    Authorized Digital Stamp
+                </div>
+                <span class="block text-[10px] font-bold uppercase text-slate-600">{{ receipt.owner_name }}</span>
+                <span class="block text-[9px] text-slate-400">PG Manager / Landlord Signature</span>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

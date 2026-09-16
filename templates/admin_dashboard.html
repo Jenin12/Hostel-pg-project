@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}System Administration | RentPG{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <!-- Header -->
+    <div class="bg-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl flex items-center justify-between">
+        <div>
+            <span class="text-xs uppercase font-bold text-amber-400 tracking-wider">Super Administrator</span>
+            <h1 class="text-2xl sm:text-3xl font-black mt-1">Platform Control Center</h1>
+            <p class="text-xs text-slate-400 mt-1">Oversee registered users, verify property listings, and monitor platform health.</p>
+        </div>
+        <div class="w-12 h-12 rounded-2xl bg-slate-800 text-amber-400 flex items-center justify-center text-xl">
+            <i class="fa-solid fa-shield-halved"></i>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Total Registered Users</span>
+            <span class="text-3xl font-black text-slate-900 mt-1 block">{{ stats.total_users }}</span>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Listed Properties</span>
+            <span class="text-3xl font-black text-primary-600 mt-1 block">{{ stats.total_properties }}</span>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Active / Total Bookings</span>
+            <span class="text-3xl font-black text-emerald-600 mt-1 block">{{ stats.total_bookings }}</span>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-200 shadow-sm">
+            <span class="block text-[10px] font-bold uppercase text-slate-400">Complaints Logged</span>
+            <span class="text-3xl font-black text-amber-600 mt-1 block">{{ stats.total_complaints }}</span>
+        </div>
+    </div>
+
+    <!-- Properties Management Table -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-hotel text-primary-600"></i>
+            <span>All Listed PG Properties</span>
+        </h2>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+                    <tr>
+                        <th class="px-4 py-3">Property Title</th>
+                        <th class="px-4 py-3">Owner Details</th>
+                        <th class="px-4 py-3">Location</th>
+                        <th class="px-4 py-3">Type</th>
+                        <th class="px-4 py-3">Rooms</th>
+                        <th class="px-4 py-3">Status</th>
+                        <th class="px-4 py-3 text-right">Moderation Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for p in properties %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 font-bold text-slate-900">
+                                <a href="{{ url_for('listing_detail', property_id=p.id) }}" target="_blank" class="hover:text-primary-600 hover:underline">
+                                    {{ p.title }}
+                                </a>
+                            </td>
+                            <td class="px-4 py-3 text-slate-600">
+                                <span class="font-semibold text-slate-800">{{ p.owner_name }}</span>
+                                <span class="block text-[10px] text-slate-400">{{ p.owner_email }}</span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-600">{{ p.locality }}, {{ p.city }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold 
+                                    {% if p.gender_category == 'Boys' %} badge-boys
+                                    {% elif p.gender_category == 'Girls' %} badge-girls
+                                    {% else %} badge-coed {% endif %}">
+                                    {{ p.gender_category }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 font-semibold text-slate-700">{{ p.room_count }} rooms</td>
+                            <td class="px-4 py-3">
+                                {% if p.is_verified %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                        Verified Live
+                                    </span>
+                                {% else %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                        Disabled
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-4 py-3 text-right">
+                                <form action="{{ url_for('toggle_property', property_id=p.id) }}" method="POST" class="inline">
+                                    <button type="submit" class="px-3 py-1 rounded-lg text-[10px] font-bold {% if p.is_verified %}bg-rose-50 text-rose-600 hover:bg-rose-100{% else %}bg-emerald-50 text-emerald-700 hover:bg-emerald-100{% endif %} transition-colors">
+                                        {% if p.is_verified %}Disable Listing{% else %}Approve & Verify{% endif %}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Registered Users Management Table -->
+    <div class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden p-6 space-y-4">
+        <h2 class="text-base font-bold text-slate-900 flex items-center space-x-2">
+            <i class="fa-solid fa-users text-indigo-600"></i>
+            <span>Registered Platform Users</span>
+        </h2>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 uppercase text-[10px] font-bold">
+                    <tr>
+                        <th class="px-4 py-3">User ID</th>
+                        <th class="px-4 py-3">Full Name</th>
+                        <th class="px-4 py-3">Email</th>
+                        <th class="px-4 py-3">Phone</th>
+                        <th class="px-4 py-3">Role</th>
+                        <th class="px-4 py-3">Joined Date</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for u in users %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="px-4 py-3 font-mono text-slate-400">#{{ u.id }}</td>
+                            <td class="px-4 py-3 font-bold text-slate-900">{{ u.name }}</td>
+                            <td class="px-4 py-3 text-slate-600">{{ u.email }}</td>
+                            <td class="px-4 py-3 text-slate-600">{{ u.phone or 'N/A' }}</td>
+                            <td class="px-4 py-3">
+                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase
+                                    {% if u.role == 'owner' %} bg-indigo-50 text-indigo-700 border border-indigo-200
+                                    {% elif u.role == 'admin' %} bg-slate-900 text-white
+                                    {% else %} bg-emerald-50 text-emerald-700 border border-emerald-200 {% endif %}">
+                                    {{ u.role }}
+                                </span>
+                            </td>
+                            <td class="px-4 py-3 text-slate-400 font-mono text-[10px]">{{ u.created_at }}</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
