@@ -161,48 +161,71 @@
                     </p>
 
                     <!-- Hero Search Bar -->
-                    <div class="mt-8 bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-4 text-slate-900 shadow-2xl border border-white/20 max-w-4xl mx-auto">
-                        <form onsubmit="handleHeroSearch(event)" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 items-center">
+                    <div class="mt-8 bg-white/95 backdrop-blur-md rounded-2xl p-3 sm:p-4 text-slate-900 shadow-2xl border border-white/20 max-w-5xl mx-auto">
+                        <form onsubmit="handleHeroSearch(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 items-center">
+                            
+                            <!-- 1. State Option -->
                             <div class="relative text-left">
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 pl-1">Location / Locality</label>
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 pl-1">
+                                    <i class="fa-solid fa-map-location-dot text-primary-500 mr-1"></i> State
+                                </label>
                                 <div class="relative">
-                                    <i class="fa-solid fa-location-dot absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <input type="text" id="hero-search-query" placeholder="e.g. Manyata, Hitec City" class="w-full pl-9 pr-3 py-2.5 text-sm font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                </div>
-                            </div>
-
-                            <div class="relative text-left">
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 pl-1">City</label>
-                                <div class="relative">
-                                    <i class="fa-solid fa-city absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <select id="hero-search-city" class="w-full pl-9 pr-3 py-2.5 text-sm font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none">
-                                        <option value="all">All Cities</option>
-                                        <option value="Bangalore">Bangalore</option>
-                                        <option value="Pune">Pune</option>
-                                        <option value="Hyderabad">Hyderabad</option>
-                                        <option value="Delhi NCR">Delhi NCR</option>
-                                        <option value="Chennai">Chennai</option>
+                                    <select id="hero-search-state" onchange="onHeroStateChange()" class="w-full px-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer">
+                                        <option value="all">All States</option>
                                     </select>
+                                    <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                                 </div>
                             </div>
 
-                            <div class="relative text-left">
-                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 pl-1">PG Type</label>
+                            <!-- 2. City Option with Live Suggestions (e.g. type 'C') -->
+                            <div class="relative text-left" id="hero-city-container">
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 pl-1">
+                                    <i class="fa-solid fa-city text-primary-500 mr-1"></i> City
+                                </label>
                                 <div class="relative">
-                                    <i class="fa-solid fa-users absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                                    <select id="hero-search-gender" class="w-full pl-9 pr-3 py-2.5 text-sm font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none">
+                                    <i class="fa-solid fa-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input type="text" id="hero-search-city" autocomplete="off"
+                                           oninput="handleCityInput(this.value, 'hero')" 
+                                           onfocus="handleCityInput(this.value, 'hero')" 
+                                           placeholder="Type 'C' for Chennai, etc." 
+                                           class="w-full pl-8 pr-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    
+                                    <!-- City Suggestions Dropdown -->
+                                    <div id="hero-city-suggestions" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 max-h-60 overflow-y-auto divide-y divide-slate-100"></div>
+                                </div>
+                            </div>
+
+                            <!-- 3. Location / Locality Area -->
+                            <div class="relative text-left">
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 pl-1">
+                                    <i class="fa-solid fa-magnifying-glass text-primary-500 mr-1"></i> Locality / Area
+                                </label>
+                                <div class="relative">
+                                    <input type="text" id="hero-search-query" placeholder="e.g. Manyata, Peelamedu" class="w-full px-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                </div>
+                            </div>
+
+                            <!-- 4. PG Type -->
+                            <div class="relative text-left">
+                                <label class="block text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-1 pl-1">
+                                    <i class="fa-solid fa-users text-primary-500 mr-1"></i> PG Type
+                                </label>
+                                <div class="relative">
+                                    <select id="hero-search-gender" class="w-full px-3 py-2.5 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer">
                                         <option value="all">Any Gender</option>
                                         <option value="Boys">Boys PG</option>
                                         <option value="Girls">Girls PG</option>
                                         <option value="Co-ed">Co-ed / Coliving</option>
                                     </select>
+                                    <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
                                 </div>
                             </div>
 
+                            <!-- 5. Search Button -->
                             <div class="text-left pt-5 sm:pt-0">
-                                <button type="submit" class="w-full py-3 px-6 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-sm shadow-lg shadow-primary-600/30 flex items-center justify-center space-x-2 transition-all hover:scale-[1.02]">
-                                    <i class="fa-solid fa-magnifying-glass"></i>
-                                    <span>Search PGs</span>
+                                <button type="submit" class="w-full py-3 px-4 rounded-xl bg-primary-600 hover:bg-primary-700 text-white font-bold text-xs shadow-lg shadow-primary-600/30 flex items-center justify-center space-x-1.5 transition-all hover:scale-[1.02]">
+                                    <i class="fa-solid fa-magnifying-glass text-xs"></i>
+                                    <span>Find PGs</span>
                                 </button>
                             </div>
                         </form>
@@ -372,16 +395,33 @@
                                 </div>
                             </div>
 
+                            <!-- State Filter -->
                             <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">City</label>
-                                <select id="filter-city" onchange="applyFilters()" class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
-                                    <option value="all">All Cities</option>
-                                    <option value="Bangalore">Bangalore</option>
-                                    <option value="Pune">Pune</option>
-                                    <option value="Hyderabad">Hyderabad</option>
-                                    <option value="Delhi NCR">Delhi NCR</option>
-                                    <option value="Chennai">Chennai</option>
-                                </select>
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                                    <i class="fa-solid fa-map-location-dot text-primary-500 mr-1"></i> State
+                                </label>
+                                <div class="relative">
+                                    <select id="filter-state" onchange="onFilterStateChange()" class="w-full px-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500 appearance-none cursor-pointer">
+                                        <option value="all">All States</option>
+                                    </select>
+                                    <i class="fa-solid fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                                </div>
+                            </div>
+
+                            <!-- City Filter with Live Suggestions -->
+                            <div class="relative" id="filter-city-container">
+                                <label class="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1">
+                                    <i class="fa-solid fa-city text-primary-500 mr-1"></i> City
+                                </label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-location-dot absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
+                                    <input type="text" id="filter-city" autocomplete="off"
+                                           oninput="handleCityInput(this.value, 'filter'); applyFilters();" 
+                                           onfocus="handleCityInput(this.value, 'filter')" 
+                                           placeholder="Type 'C' for Chennai, etc." 
+                                           class="w-full pl-8 pr-3 py-2 text-xs font-semibold rounded-xl bg-slate-50 border border-slate-200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-primary-500">
+                                    <div id="filter-city-suggestions" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-white rounded-xl shadow-2xl border border-slate-200 z-50 max-h-60 overflow-y-auto divide-y divide-slate-100"></div>
+                                </div>
                             </div>
 
                             <div>
@@ -939,6 +979,91 @@
 
     <!-- ================= JAVASCRIPT STATE ENGINE ================= -->
     <script>
+        // ------------------ Indian States & Cities Directory ------------------
+        const INDIAN_STATES = [
+            "Andhra Pradesh",
+            "Assam",
+            "Bihar",
+            "Chandigarh (UT)",
+            "Chhattisgarh",
+            "Delhi",
+            "Goa",
+            "Gujarat",
+            "Haryana",
+            "Himachal Pradesh",
+            "Jharkhand",
+            "Karnataka",
+            "Kerala",
+            "Madhya Pradesh",
+            "Maharashtra",
+            "Odisha",
+            "Punjab",
+            "Rajasthan",
+            "Tamil Nadu",
+            "Telangana",
+            "Uttar Pradesh",
+            "Uttarakhand",
+            "West Bengal"
+        ];
+
+        const INDIAN_CITIES = [
+            // Cities starting with C (Rich recommendation set as requested)
+            { name: "Chennai", state: "Tamil Nadu", popular: true },
+            { name: "Coimbatore", state: "Tamil Nadu", popular: true },
+            { name: "Chandigarh", state: "Punjab", popular: true },
+            { name: "Cochin", state: "Kerala", popular: true },
+            { name: "Calicut", state: "Kerala", popular: false },
+            { name: "Cuttack", state: "Odisha", popular: false },
+            { name: "Chittoor", state: "Andhra Pradesh", popular: false },
+            { name: "Cuddalore", state: "Tamil Nadu", popular: false },
+            { name: "Chikmagalur", state: "Karnataka", popular: false },
+            { name: "Chitradurga", state: "Karnataka", popular: false },
+            { name: "Coonoor", state: "Tamil Nadu", popular: false },
+            { name: "Chhindwara", state: "Madhya Pradesh", popular: false },
+            { name: "Chandrapur", state: "Maharashtra", popular: false },
+            { name: "Chhapra", state: "Bihar", popular: false },
+
+            // Major Indian Metros & Hubs
+            { name: "Bangalore", state: "Karnataka", popular: true },
+            { name: "Pune", state: "Maharashtra", popular: true },
+            { name: "Hyderabad", state: "Telangana", popular: true },
+            { name: "Delhi NCR", state: "Delhi", popular: true },
+            { name: "Mumbai", state: "Maharashtra", popular: true },
+            { name: "Kolkata", state: "West Bengal", popular: true },
+            { name: "Ahmedabad", state: "Gujarat", popular: true },
+            { name: "Jaipur", state: "Rajasthan", popular: true },
+            { name: "Noida", state: "Uttar Pradesh", popular: true },
+            { name: "Gurgaon", state: "Haryana", popular: true },
+            { name: "Lucknow", state: "Uttar Pradesh", popular: true },
+            { name: "Indore", state: "Madhya Pradesh", popular: true },
+            { name: "Bhopal", state: "Madhya Pradesh", popular: false },
+            { name: "Kochi", state: "Kerala", popular: true },
+            { name: "Thiruvananthapuram", state: "Kerala", popular: false },
+            { name: "Mysore", state: "Karnataka", popular: true },
+            { name: "Mangalore", state: "Karnataka", popular: true },
+            { name: "Visakhapatnam", state: "Andhra Pradesh", popular: true },
+            { name: "Vijayawada", state: "Andhra Pradesh", popular: false },
+            { name: "Patna", state: "Bihar", popular: false },
+            { name: "Ranchi", state: "Jharkhand", popular: false },
+            { name: "Bhubaneswar", state: "Odisha", popular: true },
+            { name: "Dehradun", state: "Uttarakhand", popular: true },
+            { name: "Amritsar", state: "Punjab", popular: false },
+            { name: "Ludhiana", state: "Punjab", popular: false },
+            { name: "Nagpur", state: "Maharashtra", popular: true },
+            { name: "Nashik", state: "Maharashtra", popular: false },
+            { name: "Surat", state: "Gujarat", popular: false },
+            { name: "Vadodara", state: "Gujarat", popular: false },
+            { name: "Madurai", state: "Tamil Nadu", popular: true },
+            { name: "Trichy", state: "Tamil Nadu", popular: false },
+            { name: "Salem", state: "Tamil Nadu", popular: false },
+            { name: "Tiruppur", state: "Tamil Nadu", popular: false },
+            { name: "Vellore", state: "Tamil Nadu", popular: true },
+            { name: "Warangal", state: "Telangana", popular: false },
+            { name: "Guwahati", state: "Assam", popular: false },
+            { name: "Panaji", state: "Goa", popular: false },
+            { name: "Shimla", state: "Himachal Pradesh", popular: false }
+        ];
+
         // ------------------ Master Data Store ------------------
         const APP_STATE = {
             currentUser: {
@@ -951,6 +1076,7 @@
             currentView: "home",
             filters: {
                 search: "",
+                state: "all",
                 city: "all",
                 gender: "all",
                 roomType: "all",
@@ -968,6 +1094,7 @@
                     address: "4th Cross, Nagavara Outer Ring Road, Near Manyata Tech Park",
                     locality: "Nagavara",
                     city: "Bangalore",
+                    state: "Karnataka",
                     gender_category: "Co-ed",
                     food_included: 1,
                     food_details: "4 Meals Daily (Breakfast, Lunch, Evening Snack, Dinner). North & South Indian Menu, Weekend Special Biryani & Desserts.",
@@ -994,6 +1121,7 @@
                     address: "80 Feet Road, 4th Block, Koramangala",
                     locality: "Koramangala",
                     city: "Bangalore",
+                    state: "Karnataka",
                     gender_category: "Boys",
                     food_included: 1,
                     food_details: "Homestyle South & North Indian hygienic food. Unlimited breakfast and dinner on weekdays, lunch on weekends.",
@@ -1021,6 +1149,7 @@
                     address: "Lane 7, Near South Main Road, Koregaon Park",
                     locality: "Koregaon Park",
                     city: "Pune",
+                    state: "Maharashtra",
                     gender_category: "Girls",
                     food_included: 1,
                     food_details: "Nutritious home-cooked food. Special diet / fruits available on request. Morning tea/coffee provided.",
@@ -1047,6 +1176,7 @@
                     address: "Plot 42, Silicon Valley, Madhapur, Hitec City",
                     locality: "Madhapur",
                     city: "Hyderabad",
+                    state: "Telangana",
                     gender_category: "Co-ed",
                     food_included: 1,
                     food_details: "Multi-cuisine buffet breakfast and dinner. Self-cooking induction kitchen available on each floor.",
@@ -1072,6 +1202,7 @@
                     address: "Near North Campus, Vijay Nagar",
                     locality: "North Campus",
                     city: "Delhi NCR",
+                    state: "Delhi",
                     gender_category: "Boys",
                     food_included: 1,
                     food_details: "4 Times Homestyle Meals (Breakfast, Lunch, Evening snacks with Tea, Dinner). Milk available at night.",
@@ -1097,6 +1228,7 @@
                     address: "Thiruvanmiyur Beach Road, Near ECR Junction",
                     locality: "Thiruvanmiyur",
                     city: "Chennai",
+                    state: "Tamil Nadu",
                     gender_category: "Girls",
                     food_included: 1,
                     food_details: "Fresh authentic South Indian and North Indian food prepared by experienced cooks. Filter coffee served daily.",
@@ -1112,6 +1244,57 @@
                         { id: 601, room_number: "B-101", room_type: "Single", total_beds: 1, available_beds: 1, monthly_rent: 13500, security_deposit: 27000 },
                         { id: 602, room_number: "B-102", room_type: "2-Sharing", total_beds: 2, available_beds: 2, monthly_rent: 8500, security_deposit: 17000 },
                         { id: 603, room_number: "B-103", room_type: "3-Sharing", total_beds: 3, available_beds: 3, monthly_rent: 6500, security_deposit: 13000 }
+                    ]
+                },
+                {
+                    id: 7,
+                    owner_id: 5,
+                    title: "GreenPark Techies Co-living & PG",
+                    description: "Premium fully furnished stay located at the heart of Peelamedu educational and IT corridor. High-speed fiber, silent study pods, and home-cooked South & North Indian food.",
+                    address: "Avinashi Road, Near PSG Tech, Peelamedu",
+                    locality: "Peelamedu",
+                    city: "Coimbatore",
+                    state: "Tamil Nadu",
+                    gender_category: "Co-ed",
+                    food_included: 1,
+                    food_details: "3 Times Homestyle meals with special weekend meals. Pure RO water and hygienic mess kitchen.",
+                    rules: "Gate closes at 10:30 PM. No loud music after 10 PM. Cleanliness in shared spaces must be maintained.",
+                    images: [
+                        "https://images.unsplash.com/photo-1595526114035-0d45ed16cfbf?auto=format&fit=crop&w=1200&q=80",
+                        "https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?auto=format&fit=crop&w=1200&q=80"
+                    ],
+                    contact_phone: "+91 98456 78901",
+                    is_verified: 1,
+                    amenities: ["High-Speed WiFi", "Air Conditioner", "3 Times Food", "Attached Bathroom", "Power Backup", "Washing Machine", "CCTV Security"],
+                    rooms: [
+                        { id: 701, room_number: "C-101", room_type: "Single", total_beds: 1, available_beds: 1, monthly_rent: 11000, security_deposit: 22000 },
+                        { id: 702, room_number: "C-102", room_type: "2-Sharing", total_beds: 2, available_beds: 2, monthly_rent: 7500, security_deposit: 15000 },
+                        { id: 703, room_number: "C-103", room_type: "3-Sharing", total_beds: 3, available_beds: 2, monthly_rent: 5500, security_deposit: 11000 }
+                    ]
+                },
+                {
+                    id: 8,
+                    owner_id: 4,
+                    title: "CityBeautiful Executive PG & Hostel",
+                    description: "Modern lifestyle PG close to Sector 17 & Panjab University. Beautiful garden view, high-speed WiFi, attached balconies, and hygienic multi-cuisine food.",
+                    address: "House 342, Sector 22-B, Near Market",
+                    locality: "Sector 22",
+                    city: "Chandigarh",
+                    state: "Punjab",
+                    gender_category: "Boys",
+                    food_included: 1,
+                    food_details: "4 Meals daily including morning tea and evening snacks. Unlimited breakfast and dinner.",
+                    rules: "Gate closes at 11:00 PM. Visitors allowed in common area only. Smoking and alcohol prohibited.",
+                    images: [
+                        "https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=1200&q=80",
+                        "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1200&q=80"
+                    ],
+                    contact_phone: "+91 98123 45678",
+                    is_verified: 1,
+                    amenities: ["High-Speed WiFi", "Air Conditioner", "3 Times Food", "Attached Balcony", "Attached Bathroom", "Daily Housekeeping", "Power Backup", "CCTV Security"],
+                    rooms: [
+                        { id: 801, room_number: "D-201", room_type: "Single", total_beds: 1, available_beds: 1, monthly_rent: 12500, security_deposit: 25000 },
+                        { id: 802, room_number: "D-202", room_type: "2-Sharing", total_beds: 2, available_beds: 1, monthly_rent: 8000, security_deposit: 16000 }
                     ]
                 }
             ],
@@ -1294,8 +1477,14 @@
 
         function filterByCity(cityName) {
             APP_STATE.filters.city = cityName;
-            const citySelect = document.getElementById('filter-city');
-            if (citySelect) citySelect.value = cityName;
+            const match = INDIAN_CITIES.find(c => c.name.toLowerCase() === cityName.toLowerCase());
+            APP_STATE.filters.state = match ? match.state : 'all';
+
+            const filterCity = document.getElementById('filter-city');
+            if (filterCity) filterCity.value = cityName;
+            const filterState = document.getElementById('filter-state');
+            if (filterState) filterState.value = APP_STATE.filters.state;
+
             showView('listings');
         }
 
@@ -1476,17 +1665,224 @@
             }).join('');
         }
 
+        // ------------------ State & City Autocomplete System ------------------
+        function escapeRegex(string) {
+            return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function handleCityInput(val, context) {
+            const dropdown = document.getElementById(context === 'hero' ? 'hero-city-suggestions' : 'filter-city-suggestions');
+            if (!dropdown) return;
+
+            const query = (val || '').trim();
+            const stateEl = document.getElementById(context === 'hero' ? 'hero-search-state' : 'filter-state');
+            const currentState = stateEl ? stateEl.value : 'all';
+
+            if (!query) {
+                // When empty, show top popular hubs or cities of selected state
+                let list = INDIAN_CITIES;
+                if (currentState !== 'all') {
+                    list = list.filter(c => c.state.toLowerCase() === currentState.toLowerCase());
+                } else {
+                    list = list.filter(c => c.popular);
+                }
+
+                if (list.length === 0) {
+                    dropdown.classList.add('hidden');
+                    return;
+                }
+
+                dropdown.innerHTML = `
+                    <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                        <span>${currentState !== 'all' ? `Popular Cities in ${currentState}` : 'Popular Hub Cities'}</span>
+                        <span class="text-slate-400 font-normal">Click to choose</span>
+                    </div>
+                    <div class="max-h-56 overflow-y-auto divide-y divide-slate-50">
+                        ${list.slice(0, 8).map(c => `
+                            <div class="px-3.5 py-2 hover:bg-indigo-50 cursor-pointer flex items-center justify-between transition-colors group"
+                                 onmousedown="selectCitySuggestion('${c.name}', '${c.state}', '${context}')">
+                                <div class="flex items-center space-x-2">
+                                    <i class="fa-solid fa-location-dot text-slate-400 group-hover:text-primary-600 text-xs"></i>
+                                    <span class="text-xs font-semibold text-slate-800 group-hover:text-primary-700">${c.name}</span>
+                                    <span class="text-[11px] text-slate-400">&bull; ${c.state}</span>
+                                </div>
+                                <i class="fa-solid fa-arrow-turn-down -rotate-90 text-[10px] text-slate-300 group-hover:text-primary-500"></i>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
+            const qLower = query.toLowerCase();
+
+            // 1. Prefix matches (Starts with typed character(s), e.g. 'C') - strictly prioritized
+            let startsWith = INDIAN_CITIES.filter(c => c.name.toLowerCase().startsWith(qLower));
+            // Sort startsWith by popularity then alphabetically
+            startsWith.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0) || a.name.localeCompare(b.name));
+
+            // 2. Substring matches (contains query elsewhere in name)
+            let contains = INDIAN_CITIES.filter(c => !c.name.toLowerCase().startsWith(qLower) && c.name.toLowerCase().includes(qLower));
+            contains.sort((a, b) => (b.popular ? 1 : 0) - (a.popular ? 1 : 0) || a.name.localeCompare(b.name));
+
+            let matches = [...startsWith, ...contains];
+
+            // If a specific state is selected, bubble those to the top
+            if (currentState !== 'all') {
+                const sameState = matches.filter(c => c.state.toLowerCase() === currentState.toLowerCase());
+                const diffState = matches.filter(c => c.state.toLowerCase() !== currentState.toLowerCase());
+                matches = [...sameState, ...diffState];
+            }
+
+            if (matches.length === 0) {
+                dropdown.innerHTML = `
+                    <div class="p-4 text-center text-xs text-slate-500">
+                        <i class="fa-solid fa-circle-info mr-1 text-slate-400"></i> No cities found matching "<span class="font-bold text-slate-700">${escapeHtml(query)}</span>"
+                    </div>
+                `;
+                dropdown.classList.remove('hidden');
+                return;
+            }
+
+            const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
+
+            dropdown.innerHTML = `
+                <div class="px-3.5 py-2 bg-slate-50 border-b border-slate-100 flex items-center justify-between text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <span>${startsWith.length > 0 ? `Cities starting with "${query.toUpperCase()}" (${startsWith.length})` : `Matching Cities (${matches.length})`}</span>
+                    <span class="text-slate-400 font-normal">Click to select</span>
+                </div>
+                <div class="max-h-60 overflow-y-auto divide-y divide-slate-100">
+                    ${matches.slice(0, 16).map(c => {
+                        const isPrefix = c.name.toLowerCase().startsWith(qLower);
+                        const highlighted = c.name.replace(regex, '<mark class="bg-indigo-100 text-primary-700 font-bold px-0.5 rounded">$1</mark>');
+                        return `
+                            <div class="px-3.5 py-2.5 hover:bg-indigo-50 cursor-pointer flex items-center justify-between transition-colors group"
+                                 onmousedown="selectCitySuggestion('${c.name}', '${c.state}', '${context}')">
+                                <div class="flex items-center space-x-2.5">
+                                    <div class="w-6 h-6 rounded-lg ${isPrefix ? 'bg-indigo-100 text-primary-600' : 'bg-slate-100 text-slate-500'} flex items-center justify-center text-xs">
+                                        <i class="fa-solid fa-location-dot"></i>
+                                    </div>
+                                    <div>
+                                        <span class="text-xs font-semibold text-slate-800 group-hover:text-primary-700">${highlighted}</span>
+                                        <span class="text-[11px] text-slate-400 ml-1.5">&bull; ${c.state}</span>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${c.state === currentState ? 'bg-primary-100 text-primary-700' : 'bg-slate-100 text-slate-500 group-hover:bg-primary-100 group-hover:text-primary-700'}">
+                                    ${c.state}
+                                </span>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+            dropdown.classList.remove('hidden');
+        }
+
+        function selectCitySuggestion(cityName, stateName, context) {
+            if (context === 'hero') {
+                const cityInput = document.getElementById('hero-search-city');
+                if (cityInput) cityInput.value = cityName;
+                const stateSelect = document.getElementById('hero-search-state');
+                if (stateSelect && stateName) stateSelect.value = stateName;
+                APP_STATE.filters.city = cityName;
+                if (stateName) APP_STATE.filters.state = stateName;
+                const dropdown = document.getElementById('hero-city-suggestions');
+                if (dropdown) dropdown.classList.add('hidden');
+            } else {
+                const cityInput = document.getElementById('filter-city');
+                if (cityInput) cityInput.value = cityName;
+                const stateSelect = document.getElementById('filter-state');
+                if (stateSelect && stateName) stateSelect.value = stateName;
+                APP_STATE.filters.city = cityName;
+                if (stateName) APP_STATE.filters.state = stateName;
+                const dropdown = document.getElementById('filter-city-suggestions');
+                if (dropdown) dropdown.classList.add('hidden');
+                applyFilters();
+            }
+        }
+
+        function onHeroStateChange() {
+            const stateVal = document.getElementById('hero-search-state').value;
+            APP_STATE.filters.state = stateVal;
+            const cityInput = document.getElementById('hero-search-city');
+            if (cityInput && cityInput.value && stateVal !== 'all') {
+                const match = INDIAN_CITIES.find(c => c.name.toLowerCase() === cityInput.value.toLowerCase());
+                if (match && match.state.toLowerCase() !== stateVal.toLowerCase()) {
+                    cityInput.value = '';
+                    APP_STATE.filters.city = 'all';
+                }
+            }
+        }
+
+        function onFilterStateChange() {
+            const stateVal = document.getElementById('filter-state').value;
+            APP_STATE.filters.state = stateVal;
+            const cityInput = document.getElementById('filter-city');
+            if (cityInput && cityInput.value && stateVal !== 'all') {
+                const match = INDIAN_CITIES.find(c => c.name.toLowerCase() === cityInput.value.toLowerCase());
+                if (match && match.state.toLowerCase() !== stateVal.toLowerCase()) {
+                    cityInput.value = '';
+                    APP_STATE.filters.city = 'all';
+                }
+            }
+            applyFilters();
+        }
+
+        function initStatesAndCities() {
+            const heroState = document.getElementById('hero-search-state');
+            const filterState = document.getElementById('filter-state');
+
+            INDIAN_STATES.forEach(st => {
+                if (heroState) {
+                    const opt = document.createElement('option');
+                    opt.value = st;
+                    opt.textContent = st;
+                    heroState.appendChild(opt);
+                }
+                if (filterState) {
+                    const opt = document.createElement('option');
+                    opt.value = st;
+                    opt.textContent = st;
+                    filterState.appendChild(opt);
+                }
+            });
+        }
+
         function handleHeroSearch(e) {
             e.preventDefault();
-            APP_STATE.filters.search = document.getElementById('hero-search-query').value.trim();
-            APP_STATE.filters.city = document.getElementById('hero-search-city').value;
-            APP_STATE.filters.gender = document.getElementById('hero-search-gender').value;
+            const heroState = document.getElementById('hero-search-state');
+            const heroCity = document.getElementById('hero-search-city');
+            const heroQuery = document.getElementById('hero-search-query');
+            const heroGender = document.getElementById('hero-search-gender');
+
+            APP_STATE.filters.state = heroState ? heroState.value : 'all';
+            APP_STATE.filters.city = heroCity ? heroCity.value.trim() : 'all';
+            APP_STATE.filters.search = heroQuery ? heroQuery.value.trim() : '';
+            APP_STATE.filters.gender = heroGender ? heroGender.value : 'all';
 
             // Sync with sidebar
             const filterSearch = document.getElementById('filter-search');
             if (filterSearch) filterSearch.value = APP_STATE.filters.search;
+            const filterState = document.getElementById('filter-state');
+            if (filterState) filterState.value = APP_STATE.filters.state;
             const filterCity = document.getElementById('filter-city');
-            if (filterCity) filterCity.value = APP_STATE.filters.city;
+            if (filterCity) filterCity.value = (APP_STATE.filters.city === 'all' ? '' : APP_STATE.filters.city);
+
+            const genderRadios = document.querySelectorAll('input[name="filter-gender"]');
+            genderRadios.forEach(r => {
+                r.checked = (r.value === APP_STATE.filters.gender);
+            });
             
             showView('listings');
         }
@@ -1494,7 +1890,8 @@
         // ------------------ Listings & Dynamic Filtering ------------------
         function applyFilters() {
             const searchInput = document.getElementById('filter-search');
-            const citySelect = document.getElementById('filter-city');
+            const stateSelect = document.getElementById('filter-state');
+            const cityInput = document.getElementById('filter-city');
             const roomSelect = document.getElementById('filter-room-type');
             const rentInput = document.getElementById('filter-max-rent');
             const foodCheckbox = document.getElementById('filter-food');
@@ -1502,7 +1899,8 @@
             const sortSelect = document.getElementById('sort-select');
 
             const query = searchInput ? searchInput.value.trim().toLowerCase() : APP_STATE.filters.search.toLowerCase();
-            const city = citySelect ? citySelect.value : APP_STATE.filters.city;
+            const state = stateSelect ? stateSelect.value : APP_STATE.filters.state;
+            const city = cityInput ? cityInput.value.trim() : (APP_STATE.filters.city === 'all' ? '' : APP_STATE.filters.city);
             const roomType = roomSelect ? roomSelect.value : APP_STATE.filters.roomType;
             const maxRent = rentInput ? parseFloat(rentInput.value) : APP_STATE.filters.maxRent;
             const foodOnly = foodCheckbox ? foodCheckbox.checked : APP_STATE.filters.foodOnly;
@@ -1534,12 +1932,17 @@
                     p.title.toLowerCase().includes(query) ||
                     p.locality.toLowerCase().includes(query) ||
                     p.city.toLowerCase().includes(query) ||
+                    (p.state && p.state.toLowerCase().includes(query)) ||
                     p.description.toLowerCase().includes(query)
                 );
             }
 
-            if (city && city !== 'all') {
-                filtered = filtered.filter(p => p.city.toLowerCase() === city.toLowerCase());
+            if (state && state !== 'all') {
+                filtered = filtered.filter(p => p.state && p.state.toLowerCase() === state.toLowerCase());
+            }
+
+            if (city && city !== 'all' && city !== '') {
+                filtered = filtered.filter(p => p.city.toLowerCase().includes(city.toLowerCase()));
             }
 
             if (gender && gender !== 'all') {
@@ -1621,7 +2024,7 @@
                             <div>
                                 <div class="flex items-center text-xs text-slate-500 mb-1">
                                     <i class="fa-solid fa-location-dot text-primary-500 mr-1.5"></i>
-                                    <span>${pg.locality}, ${pg.city}</span>
+                                    <span>${pg.locality}, ${pg.city}${pg.state ? ', ' + pg.state : ''}</span>
                                 </div>
                                 <h3 class="font-bold text-base text-slate-900 group-hover:text-primary-600 transition-colors cursor-pointer" onclick="showView('detail', ${pg.id})">
                                     ${pg.title}
@@ -1651,24 +2054,46 @@
 
         function resetFilters() {
             const searchInput = document.getElementById('filter-search');
-            const citySelect = document.getElementById('filter-city');
+            const stateSelect = document.getElementById('filter-state');
+            const cityInput = document.getElementById('filter-city');
             const roomSelect = document.getElementById('filter-room-type');
             const rentInput = document.getElementById('filter-max-rent');
             const foodCheckbox = document.getElementById('filter-food');
             const amenitySelect = document.getElementById('filter-amenity');
 
             if (searchInput) searchInput.value = '';
-            if (citySelect) citySelect.value = 'all';
+            if (stateSelect) stateSelect.value = 'all';
+            if (cityInput) cityInput.value = '';
             if (roomSelect) roomSelect.value = 'all';
             if (rentInput) {
                 rentInput.value = 25000;
-                document.getElementById('rent-val-display').textContent = '₹25,000/mo';
+                const disp = document.getElementById('rent-val-display');
+                if (disp) disp.textContent = '₹25,000/mo';
             }
             if (foodCheckbox) foodCheckbox.checked = false;
             if (amenitySelect) amenitySelect.value = '';
 
             const firstRadio = document.querySelector('input[name="filter-gender"][value="all"]');
             if (firstRadio) firstRadio.checked = true;
+
+            APP_STATE.filters.search = '';
+            APP_STATE.filters.state = 'all';
+            APP_STATE.filters.city = 'all';
+            APP_STATE.filters.gender = 'all';
+            APP_STATE.filters.roomType = 'all';
+            APP_STATE.filters.maxRent = 25000;
+            APP_STATE.filters.foodOnly = false;
+            APP_STATE.filters.amenity = '';
+
+            // Also reset hero inputs if they exist
+            const heroState = document.getElementById('hero-search-state');
+            if (heroState) heroState.value = 'all';
+            const heroCity = document.getElementById('hero-search-city');
+            if (heroCity) heroCity.value = '';
+            const heroQuery = document.getElementById('hero-search-query');
+            if (heroQuery) heroQuery.value = '';
+            const heroGender = document.getElementById('hero-search-gender');
+            if (heroGender) heroGender.value = 'all';
 
             applyFilters();
         }
@@ -2843,6 +3268,9 @@
             const desc = document.getElementById('prop-new-desc').value.trim();
             const img = document.getElementById('prop-new-image').value.trim() || "https://images.unsplash.com/photo-1555854877-bab0e564b8d5?auto=format&fit=crop&w=1200&q=80";
 
+            const matchCity = INDIAN_CITIES.find(c => c.name.toLowerCase() === city.toLowerCase());
+            const state = matchCity ? matchCity.state : "Karnataka";
+
             const newProp = {
                 id: Date.now(),
                 owner_id: APP_STATE.currentUser ? APP_STATE.currentUser.id : 4,
@@ -2851,6 +3279,7 @@
                 address: address,
                 locality: locality,
                 city: city,
+                state: state,
                 gender_category: gender,
                 food_included: 1,
                 food_details: "3 Times Homestyle Food included daily.",
@@ -3034,9 +3463,25 @@
             });
         });
 
-        // ------------------ Initial Load ------------------
+        // ------------------ Initial Load & Event Listeners ------------------
         document.addEventListener('DOMContentLoaded', () => {
+            initStatesAndCities();
             showView('home');
+        });
+
+        // Click outside listener for city suggestion dropdowns
+        document.addEventListener('click', (e) => {
+            const heroContainer = document.getElementById('hero-city-container');
+            const heroDropdown = document.getElementById('hero-city-suggestions');
+            if (heroContainer && heroDropdown && !heroContainer.contains(e.target)) {
+                heroDropdown.classList.add('hidden');
+            }
+
+            const filterContainer = document.getElementById('filter-city-container');
+            const filterDropdown = document.getElementById('filter-city-suggestions');
+            if (filterContainer && filterDropdown && !filterContainer.contains(e.target)) {
+                filterDropdown.classList.add('hidden');
+            }
         });
     </script>
 </body>
