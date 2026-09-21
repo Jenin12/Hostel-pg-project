@@ -2,7 +2,7 @@ import os
 import json
 import functools
 from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, abort
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify, abort, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from database import get_db_connection, init_db
 
@@ -11,6 +11,11 @@ app.secret_key = os.environ.get("SECRET_KEY", "room-pg-rental-secret-key-2026-su
 
 # Ensure database tables exist on startup
 init_db()
+
+@app.route("/single")
+@app.route("/index.html")
+def serve_single():
+    return send_file(os.path.join(os.path.dirname(os.path.abspath(__file__)), "index.html"))
 
 # ----------------- Jinja Filters & Context Processors -----------------
 
